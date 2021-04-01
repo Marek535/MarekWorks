@@ -1,0 +1,29 @@
+Zadanie 
+Klasa
+            Przedmiot: imie i nazwisko ucznia best (srednia), imie i nazwisko ucznia wors(srednia), srednia wszystkich uczniow: (sredania)
+            Przedmiot: imie i nazwisko ucznia best (srednia), imie i nazwisko ucznia wors(srednia), srednia wszystkich uczniow: (sredania)
+            Przedmiot: imie i nazwisko ucznia best (srednia), imie i nazwisko ucznia wors(srednia), srednia wszystkich uczniow: (sredania)
+            Przedmiot: imie i nazwisko ucznia best (srednia), imie i nazwisko ucznia wors(srednia), srednia wszystkich uczniow: (sredania)
+        Klasa
+            Przedmiot: imie i nazwisko ucznia best (srednia), imie i nazwisko ucznia wors(srednia), srednia wszystkich uczniow: (sredania)
+            Przedmiot: imie i nazwisko ucznia best (srednia), imie i nazwisko ucznia wors(srednia), srednia wszystkich uczniow: (sredania)
+            Przedmiot: imie i nazwisko ucznia best (srednia), imie i nazwisko ucznia wors(srednia), srednia wszystkich uczniow: (sredania)
+            Przedmiot: imie i nazwisko ucznia best (srednia), imie i nazwisko ucznia wors(srednia), srednia wszystkich uczniow: (sredania)
+         */
+         
+         public static Map.Entry<String, Double> BestWorstAndAverageOfAll(List<Rating> ratingList) {
+        Map<String, Set<Double>> listOfStudent = new HashMap<>();
+        for (Rating x : ratingList) {
+            if (!listOfStudent.containsKey(x.getPupil().IDofClass)) {
+                listOfStudent.put(x.getPupil().IDofClass, new HashSet<>());
+            }
+            listOfStudent.get(x.getPupil().IDofClass).add(x.getPupil().calculateAverage());
+
+        }
+        Map<String, Double> students = new HashMap<>();
+        for (Map.Entry<String,Set<Double>> entry:listOfStudent.entrySet()){
+            students.put(entry.getKey(),entry.getValue().stream().sorted().collect(Collectors.averagingDouble(k->k)));
+
+    }
+        return students.forEach((k,v)-> System.out.println("Klasa "+k+"ma srednia "+v));
+}
