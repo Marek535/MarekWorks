@@ -1,0 +1,28 @@
+ public List<Shape> getShapesOfType(List<Shape> shapes, Class<? extends Shape> type) {
+
+        List<Shape> getShape = new ArrayList<>();
+
+        if (shapes == null || shapes.size()==0){
+            return getShape;
+        }
+
+        for (Shape x : shapes) {
+            if (!x.getClass().equals(type)) {
+                return getShape;
+            } else{
+                getShape.add(x);
+            }
+        }
+        return getShape;
+    }
+    
+     @Test
+    public void shouldReturnListOfShapesType() {
+        //given
+        ShapeService underTest = new ShapeService();
+        List<Shape> shapes = new ArrayList<>(Arrays.asList(new Circle(1), new Circle(4), new Rectangle(2, 5), new Rectangle(7, 2)));
+        //when
+        List <Shape> listOfShapesType = underTest.getShapesOfType(shapes, Square.class);
+        //then
+        assertEquals(2, listOfShapesType.size());
+}
