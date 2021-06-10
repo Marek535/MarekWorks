@@ -1,0 +1,91 @@
+package pl.kurs.java.database;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.*;
+import java.util.stream.Collectors;
+
+public class Zadanie01 {
+    public static void main(String[] args) throws Exception {
+        /*
+        Stworz mape, gdzie kluczem bedzie kraj, a wartoscia lista miast danego panstwa
+        wypisz panstwo ktore ma najwiecej miast. ok
+        //wypisz ile jest tych miast ok
+        //wypisz kraj w którym miasta zajmują największą powierzchnię - najwieksza populacje
+        //jak napisać kod w wersji testowalnej (żeby się dało zamokować)
+
+         */
+        Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/world", "root", "12345678");
+        PreparedStatement codeNameOfCountry = conn.prepareStatement("select * from country");
+        ResultSet countrySet = codeNameOfCountry.executeQuery();
+
+        PreparedStatement codeNameOfCity = conn.prepareStatement("select * from city");
+        ResultSet citySet = codeNameOfCity.executeQuery();
+
+        Map<String, String> mapOfCityAndCountry = new HashMap<>();
+        while (countrySet.next()) {
+            if (!mapOfCityAndCountry.containsKey(countrySet.getString("code"))) {
+                mapOfCityAndCountry.put(countrySet.getString("code"), countrySet.getString("name"));
+            }
+        }
+
+        Map<String, Integer> mapOfCity = new HashMap<>();
+        while (citySet.next()) {
+            if (!mapOfCity.containsKey(citySet.getString("countrycode"))) {
+                mapOfCity.put(citySet.getString("countrycode"), 1);
+            }
+            int howMany = mapOfCity.get(citySet.getString("countrycode"));
+            mapOfCity.put(citySet.getString("countrycode"), howMany + 1);
+        }
+
+
+        Map.Entry<String, Integer> countryWithTheMostOfCityOnList =
+                mapOfCity.entrySet().stream().max((k1, k2) -> (k1.getValue() - k2.getValue())).get();
+
+//
+        Map<String, Integer> mapOfCityAndTheirPopulationTest = new HashMap<>();
+        while (citySet.next()) {
+            if (!mapOfCityAndTheirPopulationTest.containsKey(citySet.getString("countrycode"))) {
+                mapOfCityAndTheirPopulationTest.put(citySet.getString("countrycode"), 1);
+            }
+            int howMany = mapOfCityAndTheirPopulationTest.get(citySet.getString("countrycode"));
+            mapOfCityAndTheirPopulationTest.put(citySet.getString("countrycode"), howMany + 1);
+        }
+        System.out.println(Arrays.asList(mapOfCityAndTheirPopulationTest));
+
+
+        Map<String, Set<Integer>> mapOfCityAndTheirPopulation = new HashMap<>();
+        while (citySet.next()) {
+            if (!mapOfCityAndTheirPopulation.containsKey(citySet.getString("countrycode"))) {
+                mapOfCityAndTheirPopulation.put(citySet.getString("countrycode"), new HashSet<>());
+            }
+            mapOfCityAndTheirPopulation.get(citySet.getString("countrycode")).add(citySet.getInt("population"));
+        }
+        System.out.println(Arrays.asList(mapOfCityAndTheirPopulation));
+
+        Map<String, Integer> mapCityAndPopulation = new HashMap<>();
+        for(Map.Entry<String, Set<Integer>> entry : mapOfCityAndTheirPopulation.entrySet()){
+            mapCityAndPopulation.put(entry.getKey(), entry.getValue().stream().mapToInt(Integer::valueOf).sum());
+        }
+
+
+        Map.Entry<String, Integer> getKeyOfMapOfCityAndTheirPopulation = mapCityAndPopulation.entrySet().
+                stream().max((p1,p2)->(p1.getValue()-p2.getValue())).get();
+
+        System.out.println("Country which city have the most population " +mapOfCityAndCountry.get(getKeyOfMapOfCityAndTheirPopulation.getKey()));
+
+        System.out.println(" Country which have the most city on list " + mapOfCityAndCountry.get(countryWithTheMostOfCityOnList.getKey()));
+
+        System.out.println(" Quantity of city in " + mapOfCityAndCountry.get(countryWithTheMostOfCityOnList.getKey()) +
+                "-country with the most city on list " + countryWithTheMostOfCityOnList.getValue());
+
+        countrySet.close();
+        citySet.close();
+        conn.close();
+
+
+    }
+
+}
