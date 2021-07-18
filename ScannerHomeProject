@@ -1,0 +1,310 @@
+package pl.kurs.java.database;
+
+import java.net.Socket;
+import java.sql.*;
+import java.util.Scanner;
+
+public class homeWorkProject {
+    public static void main(String[] args) throws Exception {
+        Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/dynamic", "root", "12345678");
+        PreparedStatement insertIntoGroceries = conn.prepareStatement("insert into groceries(name, price, type, expirationdate) values(?,?,?,?)", PreparedStatement.RETURN_GENERATED_KEYS);
+        PreparedStatement insertIntoElectronics = conn.prepareStatement("insert into electronics(name, price, energyclass, type) values(?,?,?,?)", PreparedStatement.RETURN_GENERATED_KEYS);
+        PreparedStatement selectFromGroceries = conn.prepareStatement("select * from groceries ");
+        PreparedStatement selectFromElectronics = conn.prepareStatement("select * from electronics ");
+
+        PreparedStatement unionFromElectronicsAndGroceries = conn.prepareStatement(
+                "select name,price, 'groceries' as rodzaj, expirationdate as expirationdate, null as energyclass from groceries " +
+                        "union " +
+                        "select name,price, 'electronics' as rodzaj, null as expirationdate, energyclass from electronics");
+
+        ResultSet rsUnion = unionFromElectronicsAndGroceries.executeQuery();
+        while (rsUnion.next()) {
+            System.out.println(rsUnion.getString("name")+" "+rsUnion.getString("price")+" "+rsUnion.getString("rodzaj")+
+                    rsUnion.getString("expirationdate")+" "+rsUnion.getString("energyclass"));
+
+        }
+
+
+    }
+
+    private static int insertNewGroceries(PreparedStatement insertIntoGroceries, String name, int price, String type, String expirationdate) throws Exception {
+        insertIntoGroceries.setString(1, name);
+        insertIntoGroceries.setInt(2, price);
+        insertIntoGroceries.setString(3, type);
+        insertIntoGroceries.setString(4, expirationdate);
+        insertIntoGroceries.execute();
+        return getIdGroceries(insertIntoGroceries);
+    }
+
+    private static int getIdGroceries(PreparedStatement insertIntoGroceries) throws Exception {
+        ResultSet keysRs = insertIntoGroceries.getGeneratedKeys();
+        if (keysRs.next()) {
+            return keysRs.getInt(1);
+        }
+        return -1;
+    }
+
+    private static int insertNewElectronicts(PreparedStatement insertIntoElectronics, String name, int price, String energyclass, String type) throws Exception {
+        insertIntoElectronics.setString(1, name);
+        insertIntoElectronics.setInt(2, price);
+        insertIntoElectronics.setString(3, energyclass);
+        insertIntoElectronics.setString(4, type);
+        insertIntoElectronics.execute();
+        return getIdElectronics(insertIntoElectronics);
+    }
+
+    private static int getIdElectronics(PreparedStatement insertIntoElectronics) throws Exception {
+        ResultSet keysRsElectronics = insertIntoElectronics.getGeneratedKeys();
+        if (keysRsElectronics.next()) {
+            return keysRsElectronics.getInt(1);
+        }
+        return -1;
+    }
+
+    public static void deleteGroceries(Integer id) throws Exception {
+        try {
+            Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/dynamic", "root", "12345678");
+            PreparedStatement st = conn.prepareStatement("Delete from groceries where idgroceries =?");
+            st.setInt(1, id);
+            st.executeUpdate();
+        } catch (Exception e) {
+            System.out.println(e);
+
+
+        }
+    }
+
+    private static void deleteElectronics(Integer id) throws Exception {
+        try {
+            Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/dynamic", "root", "12345678");
+            PreparedStatement st = conn.prepareStatement("Delete from electronics where idelectronics =?");
+            st.setInt(1, id);
+            st.executeUpdate();
+        } catch (Exception e) {
+            System.out.println(e);
+
+        }
+    }
+
+    private static void findGroceriesForId(Integer id) throws Exception {
+        try {
+            Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/dynamic", "root", "12345678");
+            PreparedStatement st = conn.prepareStatement("select * from groceries where idgroceries = ?");
+            st.setInt(1, id);
+            ResultSet rs = st.executeQuery();
+
+            while (rs.next()) {
+                System.out.println(" ID of groceries you choose: " + rs.getString("idgroceries") + ", Name of groceries: " + rs.getString("name") + ", Price of groceries: " + rs.getString("price") + ", Type of groceries:  "
+                        + rs.getString("type") + ", Expirationdate of groceries: " + rs.getString("expirationdate"));
+
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+    private static void findElectronicsForId(Integer id) throws Exception {
+        try {
+            Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/dynamic", "root", "12345678");
+            PreparedStatement st = conn.prepareStatement("select * from electronics where idelectronics = ?");
+            st.setInt(1, id);
+            ResultSet rs = st.executeQuery();
+
+            while (rs.next()) {
+                System.out.println(" ID of electronics you choose: " + rs.getString("idelectronics") + ", Name of electronics " + rs.getString("name") + ", Price of electronics " + rs.getString("price") + ", Energyclass "
+                        + rs.getString("energyclass") + ", Type of electronics " + rs.getString("type"));
+
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+    private static void changeDataOfGroceries(Integer id, String name, int price, String type, String expirationdate) throws SQLException {
+        try {
+            Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/dynamic", "root", "12345678");
+            PreparedStatement connection = conn.prepareStatement("select * from groceries where idgroceries=?");
+            connection.setInt(1, id);
+            ResultSet rs = connection.executeQuery();
+            while (rs.next()) {
+
+                String stm = "update  groceries set name=?, price=?, type=?, expirationdate=? where idgroceries=?";
+
+                connection = conn.prepareStatement(stm);
+                connection.setString(1, name);
+                connection.setInt(2, price);
+                connection.setString(3, type);
+                connection.setString(4, expirationdate);
+                connection.executeUpdate();
+
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+
+        }
+    }
+
+    private static void changeDataOfElectronics(Integer id, String name, int price, String energyclass, String type) throws SQLException {
+        try {
+            Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/dynamic", "root", "12345678");
+            PreparedStatement connection = conn.prepareStatement("select * from electronics where idelectronics = ?");
+            connection.setInt(1, id);
+            ResultSet rs = connection.executeQuery();
+            while (rs.next()) {
+
+                String stm = "update  electronics set name=?, price=?, energyclass=?, type=? where idelectronics = ?";
+
+                connection = conn.prepareStatement(stm);
+                connection.setString(1, name);
+                connection.setInt(2, price);
+                connection.setString(3, energyclass);
+                connection.setString(4, type);
+                connection.executeUpdate();
+
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+
+        }
+    }
+
+    public static void runScanner() throws Exception {
+
+        Connection conn = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/dynamic", "root", "12345678");
+
+        PreparedStatement insertIntoGroceries = conn.prepareStatement("insert into groceries(name, price, type, expirationdate) values(?,?,?,?)", PreparedStatement.RETURN_GENERATED_KEYS);
+        PreparedStatement insertIntoElectronics = conn.prepareStatement("insert into electronics(name, price, energyclass, type) values(?,?,?,?)", PreparedStatement.RETURN_GENERATED_KEYS);
+
+        System.out.println(" Welcome in my home project ");
+        System.out.println("         ");
+        System.out.println(" Main menu : ");
+        System.out.println("         ");
+        System.out.println(" Insert new groceries/electronics ");
+        System.out.println("         ");
+        System.out.println(" Find groceries/electronics for id ");
+        System.out.println("         ");
+        System.out.println(" Delete groceries/electronics for id ");
+        System.out.println("         ");
+        System.out.println(" Change data of groceries/electronics  ");
+        System.out.println("         ");
+        Scanner sc = new Scanner(System.in);
+
+        System.out.println(" What u want to do ?");
+        String whatYouWantToDo = sc.nextLine();
+
+        if (whatYouWantToDo.equals("deletegroceries")) {
+            sc.nextLine();
+            System.out.println("How many groceries u want to delete ?");
+            String howManyToDelete = sc.nextLine();
+            for (int i = 0; i < Integer.parseInt(howManyToDelete); i++) {
+                Scanner sc1 = new Scanner(System.in);
+                System.out.println("What id you want to delete ?");
+                String idToDelete = sc1.nextLine();
+                deleteGroceries(Integer.parseInt(idToDelete));
+
+            }
+        } else if (whatYouWantToDo.equals("deleteelectronics")) {
+            sc.nextLine();
+            System.out.println("How many electronics u want to delete ?");
+            String howManyToDelete = sc.nextLine();
+            for (int i = 0; i < Integer.parseInt(howManyToDelete); i++) {
+                Scanner sc1 = new Scanner(System.in);
+                System.out.println("What id you want to delete ?");
+                String idToDelete = sc1.nextLine();
+                deleteElectronics(Integer.parseInt(idToDelete));
+
+            }
+        } else if (whatYouWantToDo.equals("findgroceriesforid")) {
+            sc.nextLine();
+            System.out.println("How many groceries u want to find ?");
+            String howManyToFind = sc.nextLine();
+            for (int i = 0; i < Integer.parseInt(howManyToFind); i++) {
+                Scanner sc1 = new Scanner(System.in);
+                System.out.println("What id you want to find ?");
+                String idToFind = sc1.nextLine();
+                findGroceriesForId(Integer.parseInt(idToFind));
+
+            }
+        } else if (whatYouWantToDo.equals("findelectronicsforid")) {
+            sc.nextLine();
+            System.out.println("How many electronics u want to find ?");
+            String howManyToFind = sc.nextLine();
+            for (int i = 0; i < Integer.parseInt(howManyToFind); i++) {
+                Scanner sc1 = new Scanner(System.in);
+                System.out.println("What id you want to find ?");
+                String idToFind = sc1.nextLine();
+                findElectronicsForId(Integer.parseInt(idToFind));
+
+            }
+        } else if (whatYouWantToDo.equals("insertnewgroceries")) {
+            sc.nextLine();
+            System.out.println("How Many groceries u want to add?");
+            String howManyGroceriesToAdd = sc.nextLine();
+            for (int i = 0; i < Integer.parseInt(howManyGroceriesToAdd); i++) {
+                Scanner sc1 = new Scanner(System.in);
+                System.out.println("What is name of groceries ?");
+                String name = sc1.nextLine();
+                System.out.println("What is the price");
+                String price = sc1.nextLine();
+                System.out.println("What type of groceries is ?");
+                String type = sc1.nextLine();
+                System.out.println("What is expirationdate ?");
+                String expirationDate = sc1.nextLine();
+                insertNewGroceries(insertIntoGroceries, name, Integer.parseInt(price), type, expirationDate);
+            }
+        } else if (whatYouWantToDo.equals("insertnewelectronics")) {
+            sc.nextLine();
+            System.out.println("How Many electronics u want to add?");
+            String howManyElectronicsToAdd = sc.nextLine();
+            for (int i = 0; i < Integer.parseInt(howManyElectronicsToAdd); i++) {
+                Scanner sc1 = new Scanner(System.in);
+                System.out.println("What is name of electronics ?");
+                String name = sc1.nextLine();
+                System.out.println("What is the price");
+                String price = sc1.nextLine();
+                System.out.println("What is the energyclass ?");
+                String energyclass = sc1.nextLine();
+                System.out.println("What type it is?");
+                String type = sc1.nextLine();
+                insertNewElectronicts(insertIntoElectronics, name, Integer.parseInt(price), energyclass, type);
+            }
+        } else if (whatYouWantToDo.equals("changedataofgroceries")) {
+            sc.nextLine();
+            System.out.println("How Many groceries u want to change?");
+            String howManyGroceriesTochange = sc.nextLine();
+            for (int i = 0; i < Integer.parseInt(howManyGroceriesTochange); i++) {
+                Scanner sc1 = new Scanner(System.in);
+                System.out.println("Groceries on what id u want to change ?");
+                String id = sc1.nextLine();
+                System.out.println("What is  name of groceries ?");
+                String name = sc1.nextLine();
+                System.out.println("What is the price");
+                String price = sc1.nextLine();
+                System.out.println("What type of groceries is ?");
+                String type = sc1.nextLine();
+                System.out.println("What is expirationdate ?");
+                String expirationDate = sc1.nextLine();
+                changeDataOfGroceries(Integer.parseInt(id), name, Integer.parseInt(price), type, expirationDate);
+            }
+        } else if (whatYouWantToDo.equals("changedataofelectronics")) {
+            sc.nextLine();
+            System.out.println("How Many electronics u want to change?");
+            String howManyGroceriesTochange = sc.nextLine();
+            for (int i = 0; i < Integer.parseInt(howManyGroceriesTochange); i++) {
+                Scanner sc1 = new Scanner(System.in);
+                System.out.println("Electronics on what id u want to change ?");
+                String id = sc1.nextLine();
+                System.out.println("What is name of electronics ?");
+                String name = sc1.nextLine();
+                System.out.println("What is the price");
+                String price = sc1.nextLine();
+                System.out.println("What is the energyclass ?");
+                String energyclass = sc1.nextLine();
+                System.out.println("What type it is?");
+                String type = sc1.nextLine();
+                changeDataOfElectronics(Integer.parseInt(id), name, Integer.parseInt(price), energyclass, type);
+            }
+        }
+    }
+}
+
