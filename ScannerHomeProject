@@ -12,6 +12,13 @@ public class homeWorkProject {
         PreparedStatement selectFromGroceries = conn.prepareStatement("select * from groceries ");
         PreparedStatement selectFromElectronics = conn.prepareStatement("select * from electronics ");
 
+        unionTable(conn);
+
+
+
+
+    }
+    private static void unionTable( Connection conn) throws SQLException {
         PreparedStatement unionFromElectronicsAndGroceries = conn.prepareStatement(
                 "select name,price, 'groceries' as rodzaj, expirationdate as expirationdate, null as energyclass from groceries " +
                         "union " +
@@ -23,7 +30,6 @@ public class homeWorkProject {
                     rsUnion.getString("expirationdate")+" "+rsUnion.getString("energyclass"));
 
         }
-
 
     }
 
