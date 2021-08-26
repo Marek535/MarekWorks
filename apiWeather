@@ -1,0 +1,57 @@
+package pl.kurs.java.threads;
+
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+public class WeatherReader {
+
+    public static void main(String[] args) {
+        String apiKey = "a7ca1d14b2c4652887ffc49587622b79";
+        String city = "Warsaw";
+        String urlToWeather = "http://api.openweathermap.org/data/2.5/weather?q=" + city + "&appid=" + apiKey + "&units=metric";
+
+        try {
+            StringBuilder result = new StringBuilder();
+            URL url = new URL(urlToWeather);
+            URLConnection conn = url.openConnection();
+            BufferedReader weatherReader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String line;
+            while ((line=weatherReader.readLine())!= null){
+                result.append(line);
+            }
+            weatherReader.close();
+            System.out.println(result);
+
+            Map<Object, Object> respMap = jsonToMap(result.toString());
+
+//            Map<String,Object> mainMap= jsonToMap(respMap.get("main").toString());
+            Map<Object, Object> weatherMap= jsonToMap(respMap.get("weather").toString());
+//
+//            System.out.println("Current temperature in " +city+" is "+mainMap.get("temp"));
+
+            System.out.println("Current description in " +city+" is "+weatherMap.get("main"));
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public static Map<Object, Object> jsonToMap(String xyz) {
+        Map<Object, Object> map = new Gson().fromJson(xyz, new TypeToken<HashMap<Object, Object>>() {  }.getType());
+        return map;
+
+    }
+
+}
+
