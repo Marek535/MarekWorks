@@ -1,37 +1,25 @@
   public static void main(String[] args) {
 
        
-        List<String> listOfWords = new ArrayList<>(Arrays.asList("Facebook", "God", "Kajak", "Oko", "Olo", "Aviva"));
-        System.out.println(listOfWords);
+      
+        List<String> listOfWords = new ArrayList<>(Arrays.asList("facebook", "god", "kajak", "oko", "olo", "aviva"));
 
         System.out.println(listOfPolidrome(listOfWords));
 
+       
 
     }
-
-  
-    }
+   
 
     public static List<String> listOfPolidrome(List<String> list) {
-        String toCheck = Arrays.toString(list.toArray());
-        String[] str = toCheck.split(", ");
         List<String> listPolidrome = new ArrayList<>();
-        for (int i = 1; i < str.length; i++) {
-            if (ifItsPolidrome(str[i])) {
-                listPolidrome.add(str[i]);
-            }
-        }
-        return listPolidrome;
-    }
-     public static List listOfPolidrome(List<String> list) {
-        List<String> listPolidrome = new ArrayList<>();
-        for (int i = 1; i < list.size(); i++) {
+        for (int i = 0; i < list.size(); i++) {
             if (ifItsPolidrome(list.get(i))) {
                 listPolidrome.add(list.get(i));
             }
         }
         return listPolidrome;
-    }
+   }
 
     public static boolean ifItsPolidrome(String word) {
         if (word == null || word.length() == 0) {
