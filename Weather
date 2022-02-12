@@ -1,0 +1,59 @@
+@Value
+public class WeatherResponse {
+
+    private ArrayList<JSONArray> acctualWeather;
+
+}
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class WeatherRequest {
+    private String city;
+
+
+
+}@RequiredArgsConstructor
+@Service
+public class WeatherProvider {
+
+    private final ObjectMapper objectMapperToWeather;
+
+
+    @SneakyThrows
+    public ArrayList<String> getWeather(String city) {
+
+        String urlToWeather = "http://api.openweathermap.org/data/2.5/weather?q=" + city + "&appid=777aacdaa5449719cc2f9054293fd590&units=metric";
+
+//        JSONArray  jsonArray = new JSONArray(new URL(urlToWeather));
+//
+//        JSONObject jsonObject = jsonArray.getJSONObject(0);
+//        String weather = jsonObject.getString("main");
+
+
+
+        WeatherIntegrationDto dto = objectMapperToWeather.readValue(new URL(urlToWeather),WeatherIntegrationDto.class);
+
+        return dto.getWeather().get(city);
+
+    }
+}
+@Data
+public class WeatherIntegrationDto {
+    private Map<String,ArrayList<String>> weather;
+}
+
+@RestController
+@RequestMapping("/weather")
+@RequiredArgsConstructor
+public class WeatherController {
+
+    private final WeatherProvider weatherProvider;
+
+    @PostMapping
+    public ResponseEntity<WeatherResponse> weatherForecast(@RequestBody WeatherRequest weatherRequest) {
+        ArrayList<JSONArray> weatherInRequestCity = weatherProvider.getWeather(weatherRequest.getCity());
+
+        return ResponseEntity.ok(new WeatherResponse(weatherInRequestCity));
+
+    }
+}
