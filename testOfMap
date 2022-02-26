@@ -1,0 +1,83 @@
+package pl.kurs.java.example.controller;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.web.reactive.server.StatusAssertions;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import pl.kurs.java.example.provider.RateProvider;
+import pl.kurs.java.example.provider.WeatherProvider;
+import pl.kurs.java.example.request.ExchangeRequest;
+import pl.kurs.java.example.request.WeatherRequest;
+
+import java.util.*;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+class WeatherControllerTest {
+    @Autowired
+    private MockMvc postman;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockBean
+    private WeatherProvider weatherProvider;
+
+
+    @Test
+    void shouldGetWeather() throws Exception {
+//        Mockito.when(weatherProvider.getWeather("warsaw")).thenReturn(Collections.singletonList("clouds"));
+
+        WeatherRequest request = new WeatherRequest("warsaw");
+        String requestJson = objectMapper.writeValueAsString(request);
+
+        postman.perform(MockMvcRequestBuilders.post("/weather")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.acctualWeather").value("clouds"));
+
+        Mockito.verify(weatherProvider, Mockito.times(1)).getWeather("warsaw");
+    }
+
+    @Test
+    void shouldReturnRightCity() throws Exception {
+
+
+        WeatherRequest firstRequest = new WeatherRequest("warsaw");
+        WeatherRequest secondRequest = new WeatherRequest("warsaw");
+        WeatherRequest thirdRequest = new WeatherRequest("london");
+
+
+        String reqeustJson = objectMapper.writeValueAsString(firstRequest);
+        String secondReqeustJson = objectMapper.writeValueAsString(secondRequest);
+        String thirdReqeustJson = objectMapper.writeValueAsString(thirdRequest);
+
+        List<String> cityList = new ArrayList<>(Arrays.asList(reqeustJson, secondReqeustJson, thirdReqeustJson));
+        List<String> exceptedList = new ArrayList<>(Arrays.asList("warsaw", "warsaw", "london"));
+
+
+        postman.perform(MockMvcRequestBuilders.post("/weather")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.valueOf(cityList)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Mockito.verify(weatherProvider, Mockito.times(1)).;
+
+
+    }
+}
+
+
